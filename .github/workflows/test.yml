@@ -1,7 +1,7 @@
 name: Test Setup
 
 on:
-  workflow_dispatch:  # Manual trigger only
+  workflow_dispatch:
 
 jobs:
   test:
@@ -14,7 +14,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Install dependencies
         run: |
@@ -23,63 +23,25 @@ jobs:
 
       - name: Check secrets are configured
         env:
-          MY_EMAIL: ${{ secrets.MY_EMAIL }}
-          MY_PASSWORD: ${{ secrets.MY_PASSWORD }}
+          OWM_API_KEY: ${{ secrets.OWM_API_KEY }}
+          ACCOUNT_SID: ${{ secrets.ACCOUNT_SID }}
+          AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
+          TWILIO_NUMBER: ${{ secrets.TWILIO_NUMBER }}
+          MY_NUMBER: ${{ secrets.MY_NUMBER }}
         run: |
-          if [ -z "$MY_EMAIL" ]; then
-            echo "MY_EMAIL secret is not set!"
-            echo "Go to Settings > Secrets > Actions and add it."
-            exit 1
-          else
-            echo "MY_EMAIL is configured"
-          fi
+          [ -n "$OWM_API_KEY" ] && echo "OWM_API_KEY OK" || exit 1
+          [ -n "$ACCOUNT_SID" ] && echo "ACCOUNT_SID OK" || exit 1
+          [ -n "$AUTH_TOKEN" ] && echo "AUTH_TOKEN OK" || exit 1
+          [ -n "$TWILIO_NUMBER" ] && echo "TWILIO_NUMBER OK" || exit 1
+          [ -n "$MY_NUMBER" ] && echo "MY_NUMBER OK" || exit 1
 
-          if [ -z "$MY_PASSWORD" ]; then
-            echo "MY_PASSWORD secret is not set!"
-            echo "Go to Settings > Secrets > Actions and add it."
-            exit 1
-          else
-            echo "MY_PASSWORD is configured"
-          fi
-
-          echo ""
-          echo "All secrets are configured!"
-
-      - name: Check required files exist
+      - name: Check required files
         run: |
-          echo "Checking for required files..."
-
-          if [ -f "main.py" ]; then
-            echo "main.py found"
-          else
-            echo "main.py not found!"
-            exit 1
-          fi
-
-          if [ -f "requirements.txt" ]; then
-            echo "requirements.txt found"
-          else
-            echo "requirements.txt not found!"
-            exit 1
-          fi
-
-          if [ -f "birthdays.csv" ]; then
-            echo "birthdays.csv found"
-          else
-            echo "birthdays.csv not found!"
-            exit 1
-          fi
-
-          echo ""
-          echo "All required files found!"
+          test -f main.py && echo "main.py found"
+          test -f requirements.txt && echo "requirements.txt found"
 
       - name: Test Python syntax
-        run: python -m py_compile main.py && echo "Python syntax OK"
+        run: python -m py_compile main.py
 
       - name: Success
-        run: |
-          echo ""
-          echo "========================================"
-          echo "  All checks passed!"
-          echo "  Your setup is ready to go."
-          echo "========================================"
+        run: echo "All checks passed!"
